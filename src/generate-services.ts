@@ -119,8 +119,8 @@ function generateRegularRpcMethod(ctx: Context, methodDesc: MethodDescriptorProt
   const maybeCtx = options.context ? "ctx," : "";
   const maybeAbortSignal = options.useAbortSignal ? "abortSignal || undefined," : "";
 
-  let encode = code`${rawInputType}.encode(request).finish()`;
-  let decode = code`data => ${rawOutputType}.decode(${Reader}.create(data))`;
+  let encode = code`this.useJson?Uint8Array.from(JSON.stringify(${rawInputType}.toJSON(request)).split('').map(x=>x.charCodeAt(0))):${rawInputType}.encode(request).finish()`
+  let decode = code`data => this.useJson ? ${rawOutputType}.fromJSON(JSON.parse(String.fromCharCode(...data))):${rawOutputType}.decode(${Reader}.create(data))`;
 
   // if (options.useDate && rawOutputType.toString().includes("Timestamp")) {
   //   decode = code`data => ${utils.fromTimestamp}(${rawOutputType}.decode(${Reader}.create(data)))`;
@@ -198,8 +198,10 @@ export function generateServiceClientImpl(
   const rpcType = options.context ? "Rpc<Context>" : "Rpc";
   chunks.push(code`private readonly rpc: ${rpcType};`);
   chunks.push(code`private readonly service: string;`);
-  chunks.push(code`constructor(rpc: ${rpcType}, opts?: {service?: string}) {`);
+  chunks.push(code`private readonly useJson: bool;`);
+  chunks.push(code`constructor(rpc: ${rpcType}, opts?: {service?: string, useJson?: bool}) {`);
   chunks.push(code`this.service = opts?.service || ${serviceNameConst};`);
+  chunks.push(code`this.useJson = opts?.useJson || false;`);
   chunks.push(code`this.rpc = rpc;`);
 
   // Bind each FooService method to the FooServiceImpl class
