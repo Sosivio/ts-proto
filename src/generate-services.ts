@@ -198,8 +198,8 @@ export function generateServiceClientImpl(
   const rpcType = options.context ? "Rpc<Context>" : "Rpc";
   chunks.push(code`private readonly rpc: ${rpcType};`);
   chunks.push(code`private readonly service: string;`);
-  chunks.push(code`private readonly useJson: bool;`);
-  chunks.push(code`constructor(rpc: ${rpcType}, opts?: {service?: string, useJson?: bool}) {`);
+  chunks.push(code`private readonly useJson: boolean;`);
+  chunks.push(code`constructor(rpc: ${rpcType}, opts?: {service?: string, useJson?: boolean}) {`);
   chunks.push(code`this.service = opts?.service || ${serviceNameConst};`);
   chunks.push(code`this.useJson = opts?.useJson || false;`);
   chunks.push(code`this.rpc = rpc;`);

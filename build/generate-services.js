@@ -160,8 +160,8 @@ function generateServiceClientImpl(ctx, fileDesc, serviceDesc) {
     const rpcType = options.context ? "Rpc<Context>" : "Rpc";
     chunks.push((0, ts_poet_1.code) `private readonly rpc: ${rpcType};`);
     chunks.push((0, ts_poet_1.code) `private readonly service: string;`);
-    chunks.push((0, ts_poet_1.code) `private readonly useJson: bool;`);
-    chunks.push((0, ts_poet_1.code) `constructor(rpc: ${rpcType}, opts?: {service?: string, useJson?: bool}) {`);
+    chunks.push((0, ts_poet_1.code) `private readonly useJson: boolean;`);
+    chunks.push((0, ts_poet_1.code) `constructor(rpc: ${rpcType}, opts?: {service?: string, useJson?: boolean}) {`);
     chunks.push((0, ts_poet_1.code) `this.service = opts?.service || ${serviceNameConst};`);
     chunks.push((0, ts_poet_1.code) `this.useJson = opts?.useJson || false;`);
     chunks.push((0, ts_poet_1.code) `this.rpc = rpc;`);
