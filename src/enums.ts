@@ -6,7 +6,7 @@ import SourceInfo, { Fields } from "./sourceInfo";
 import { Context } from "./context";
 
 const UNRECOGNIZED_ENUM_NAME = "UNRECOGNIZED";
-const UNRECOGNIZED_ENUM_VALUE = -1;
+const UNRECOGNIZED_ENUM_VALUE = 0;
 
 // Output the `enum { Foo, A = 0, B = 1 }`
 export function generateEnum(

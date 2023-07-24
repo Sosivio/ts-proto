@@ -10,7 +10,7 @@ export function generateEncoder(ctx: Context, typeName: string): Code {
     return code`${messageToTypeName(ctx, typeName, { keepValueType: true })}.encode(value).finish()`;
   }
 
-  if (name == "Timestamp") {
+  if (name == "Timestamp" || name == "Time") {
     const TimestampValue = impProto(ctx.options, "google/protobuf/timestamp", name);
 
     let value = code`value`;
@@ -65,7 +65,7 @@ export function generateDecoder(ctx: Context, typeName: string): Code {
 
   let TypeValue: Import;
 
-  if (name == "Timestamp") {
+  if (name == "Timestamp" || name == "Time") {
     TypeValue = impProto(ctx.options, "google/protobuf/timestamp", name);
 
     const decoder = code`${TypeValue}.decode(value)`;

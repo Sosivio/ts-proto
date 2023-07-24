@@ -6,7 +6,7 @@ const utils_1 = require("./utils");
 const case_1 = require("./case");
 const sourceInfo_1 = require("./sourceInfo");
 const UNRECOGNIZED_ENUM_NAME = "UNRECOGNIZED";
-const UNRECOGNIZED_ENUM_VALUE = -1;
+const UNRECOGNIZED_ENUM_VALUE = 0;
 // Output the `enum { Foo, A = 0, B = 1 }`
 function generateEnum(ctx, fullName, enumDesc, sourceInfo) {
     var _a;

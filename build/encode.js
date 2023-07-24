@@ -10,7 +10,7 @@ function generateEncoder(ctx, typeName) {
     if (!name) {
         return (0, ts_poet_1.code) `${(0, types_1.messageToTypeName)(ctx, typeName, { keepValueType: true })}.encode(value).finish()`;
     }
-    if (name == "Timestamp") {
+    if (name == "Timestamp" || name == "Time") {
         const TimestampValue = (0, utils_1.impProto)(ctx.options, "google/protobuf/timestamp", name);
         let value = (0, ts_poet_1.code) `value`;
         if (ctx.options.useDate === options_1.DateOption.DATE || ctx.options.useDate === options_1.DateOption.STRING) {
@@ -56,7 +56,7 @@ function generateDecoder(ctx, typeName) {
         return (0, ts_poet_1.code) `${(0, types_1.messageToTypeName)(ctx, typeName, { keepValueType: true })}.decode(value)`;
     }
     let TypeValue;
-    if (name == "Timestamp") {
+    if (name == "Timestamp" || name == "Time") {
         TypeValue = (0, utils_1.impProto)(ctx.options, "google/protobuf/timestamp", name);
         const decoder = (0, ts_poet_1.code) `${TypeValue}.decode(value)`;
         if (ctx.options.useDate === options_1.DateOption.DATE || ctx.options.useDate === options_1.DateOption.STRING) {
