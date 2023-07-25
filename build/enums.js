@@ -61,7 +61,7 @@ function generateEnumFromJson(ctx, fullName, enumDesc) {
     const functionName = (0, case_1.uncapitalize)(fullName) + "FromJSON";
     chunks.push((0, ts_poet_1.code) `export function ${(0, ts_poet_1.def)(functionName)}(object: any): ${fullName} {`);
     if (options.useDirectEnums) {
-        chunks.push((0, ts_poet_1.code) `return object as ${fullName};`);
+        chunks.push((0, ts_poet_1.code) `return (object||0) as ${fullName};`);
     }
     else {
         chunks.push((0, ts_poet_1.code) `switch (object) {`);
@@ -103,7 +103,7 @@ function generateEnumToJson(ctx, fullName, enumDesc) {
     const returnType = options.useDirectEnums || options.useNumericEnumForJson ? "number" : "string";
     chunks.push((0, ts_poet_1.code) `export function ${(0, ts_poet_1.def)(functionName)}(object: ${fullName}): ${returnType} {`);
     if (options.useDirectEnums) {
-        chunks.push((0, ts_poet_1.code) `return object as number;`);
+        chunks.push((0, ts_poet_1.code) `return (object||0) as number;`);
     }
     else {
         chunks.push((0, ts_poet_1.code) `switch (object) {`);
