@@ -76,7 +76,7 @@ export function generateEnumFromJson(ctx: Context, fullName: string, enumDesc: E
   const functionName = uncapitalize(fullName) + "FromJSON";
   chunks.push(code`export function ${def(functionName)}(object: any): ${fullName} {`);
   if (options.useDirectEnums) {
-    chunks.push(code`return object as ${fullName};`);
+    chunks.push(code`return (object||0) as ${fullName};`);
   } else {
     chunks.push(code`switch (object) {`);
     for (const valueDesc of enumDesc.value) {
@@ -120,7 +120,7 @@ export function generateEnumToJson(ctx: Context, fullName: string, enumDesc: Enu
     code`export function ${def(functionName)}(object: ${fullName}): ${returnType} {`,
   );
   if (options.useDirectEnums) {
-    chunks.push(code`return object as number;`);
+    chunks.push(code`return (object||0) as number;`);
   } else {
     chunks.push(code`switch (object) {`);
 
