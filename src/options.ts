@@ -81,6 +81,7 @@ export type Options = {
   useSnakeTypeName: boolean;
   outputExtensions: boolean;
   outputIndex: boolean;
+  useDirectEnums: boolean;
   M: { [from: string]: string };
 };
 
@@ -132,6 +133,7 @@ export function defaultOptions(): Options {
     useSnakeTypeName: true,
     outputExtensions: false,
     outputIndex: false,
+    useDirectEnums: false,
     M: {},
   };
 }

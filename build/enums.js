@@ -60,32 +60,37 @@ function generateEnumFromJson(ctx, fullName, enumDesc) {
     const chunks = [];
     const functionName = (0, case_1.uncapitalize)(fullName) + "FromJSON";
     chunks.push((0, ts_poet_1.code) `export function ${(0, ts_poet_1.def)(functionName)}(object: any): ${fullName} {`);
-    chunks.push((0, ts_poet_1.code) `switch (object) {`);
-    for (const valueDesc of enumDesc.value) {
-        const memberName = getMemberName(ctx, fullName, valueDesc);
-        const valueName = getValueName(ctx, fullName, valueDesc);
-        chunks.push((0, ts_poet_1.code) `
-      case ${valueDesc.number}:
-      case "${valueName}":
-        return ${fullName}.${memberName};
-    `);
-    }
-    if (options.unrecognizedEnum) {
-        chunks.push((0, ts_poet_1.code) `
-      case ${UNRECOGNIZED_ENUM_VALUE}:
-      case "${UNRECOGNIZED_ENUM_NAME}":
-      default:
-        return ${fullName}.${UNRECOGNIZED_ENUM_NAME};
-    `);
+    if (options.useDirectEnums) {
+        chunks.push((0, ts_poet_1.code) `return object as ${fullName};`);
     }
     else {
-        // We use globalThis to avoid conflicts on protobuf types named `Error`.
-        chunks.push((0, ts_poet_1.code) `
-      default:
-        throw new ${utils.globalThis}.Error("Unrecognized enum value " + object + " for enum ${fullName}");
-    `);
+        chunks.push((0, ts_poet_1.code) `switch (object) {`);
+        for (const valueDesc of enumDesc.value) {
+            const memberName = getMemberName(ctx, fullName, valueDesc);
+            const valueName = getValueName(ctx, fullName, valueDesc);
+            chunks.push((0, ts_poet_1.code) `
+        case ${valueDesc.number}:
+        case "${valueName}":
+            return ${fullName}.${memberName};
+        `);
+        }
+        if (options.unrecognizedEnum) {
+            chunks.push((0, ts_poet_1.code) `
+        case ${UNRECOGNIZED_ENUM_VALUE}:
+        case "${UNRECOGNIZED_ENUM_NAME}":
+        default:
+            return ${fullName}.${UNRECOGNIZED_ENUM_NAME};
+        `);
+        }
+        else {
+            // We use globalThis to avoid conflicts on protobuf types named `Error`.
+            chunks.push((0, ts_poet_1.code) `
+        default:
+            throw new ${utils.globalThis}.Error("Unrecognized enum value " + object + " for enum ${fullName}");
+        `);
+        }
+        chunks.push((0, ts_poet_1.code) `}`);
     }
-    chunks.push((0, ts_poet_1.code) `}`);
     chunks.push((0, ts_poet_1.code) `}`);
     return (0, ts_poet_1.joinCode)(chunks, { on: "\n" });
 }
@@ -95,43 +100,49 @@ function generateEnumToJson(ctx, fullName, enumDesc) {
     const { options, utils } = ctx;
     const chunks = [];
     const functionName = (0, case_1.uncapitalize)(fullName) + "ToJSON";
-    chunks.push((0, ts_poet_1.code) `export function ${(0, ts_poet_1.def)(functionName)}(object: ${fullName}): ${ctx.options.useNumericEnumForJson ? "number" : "string"} {`);
-    chunks.push((0, ts_poet_1.code) `switch (object) {`);
-    for (const valueDesc of enumDesc.value) {
-        if (ctx.options.useNumericEnumForJson) {
-            const memberName = getMemberName(ctx, fullName, valueDesc);
-            chunks.push((0, ts_poet_1.code) `case ${fullName}.${memberName}: return ${valueDesc.number};`);
-        }
-        else {
-            const memberName = getMemberName(ctx, fullName, valueDesc);
-            const valueName = getValueName(ctx, fullName, valueDesc);
-            chunks.push((0, ts_poet_1.code) `case ${fullName}.${memberName}: return "${valueName}";`);
-        }
-    }
-    if (options.unrecognizedEnum) {
-        chunks.push((0, ts_poet_1.code) `
-      case ${fullName}.${UNRECOGNIZED_ENUM_NAME}:`);
-        if (ctx.options.useNumericEnumForJson) {
-            chunks.push((0, ts_poet_1.code) `
-      default:
-        return ${UNRECOGNIZED_ENUM_VALUE};
-    `);
-        }
-        else {
-            chunks.push((0, ts_poet_1.code) `
-      default:
-        return "${UNRECOGNIZED_ENUM_NAME}";
-    `);
-        }
+    const returnType = options.useDirectEnums || options.useNumericEnumForJson ? "number" : "string";
+    chunks.push((0, ts_poet_1.code) `export function ${(0, ts_poet_1.def)(functionName)}(object: ${fullName}): ${returnType} {`);
+    if (options.useDirectEnums) {
+        chunks.push((0, ts_poet_1.code) `return object as number;`);
     }
     else {
-        // We use globalThis to avoid conflicts on protobuf types named `Error`.
-        chunks.push((0, ts_poet_1.code) `
-      default:
-        throw new ${utils.globalThis}.Error("Unrecognized enum value " + object + " for enum ${fullName}");
-    `);
+        chunks.push((0, ts_poet_1.code) `switch (object) {`);
+        for (const valueDesc of enumDesc.value) {
+            if (ctx.options.useNumericEnumForJson) {
+                const memberName = getMemberName(ctx, fullName, valueDesc);
+                chunks.push((0, ts_poet_1.code) `case ${fullName}.${memberName}: return ${valueDesc.number};`);
+            }
+            else {
+                const memberName = getMemberName(ctx, fullName, valueDesc);
+                const valueName = getValueName(ctx, fullName, valueDesc);
+                chunks.push((0, ts_poet_1.code) `case ${fullName}.${memberName}: return "${valueName}";`);
+            }
+        }
+        if (options.unrecognizedEnum) {
+            chunks.push((0, ts_poet_1.code) `
+        case ${fullName}.${UNRECOGNIZED_ENUM_NAME}:`);
+            if (ctx.options.useNumericEnumForJson) {
+                chunks.push((0, ts_poet_1.code) `
+        default:
+            return ${UNRECOGNIZED_ENUM_VALUE};
+        `);
+            }
+            else {
+                chunks.push((0, ts_poet_1.code) `
+        default:
+            return "${UNRECOGNIZED_ENUM_NAME}";
+        `);
+            }
+        }
+        else {
+            // We use globalThis to avoid conflicts on protobuf types named `Error`.
+            chunks.push((0, ts_poet_1.code) `
+        default:
+            throw new ${utils.globalThis}.Error("Unrecognized enum value " + object + " for enum ${fullName}");
+        `);
+        }
+        chunks.push((0, ts_poet_1.code) `}`);
     }
-    chunks.push((0, ts_poet_1.code) `}`);
     chunks.push((0, ts_poet_1.code) `}`);
     return (0, ts_poet_1.joinCode)(chunks, { on: "\n" });
 }

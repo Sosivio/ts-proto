@@ -81,6 +81,7 @@ function defaultOptions() {
         useSnakeTypeName: true,
         outputExtensions: false,
         outputIndex: false,
+        useDirectEnums: false,
         M: {},
     };
 }

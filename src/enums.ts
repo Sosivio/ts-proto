@@ -75,34 +75,35 @@ export function generateEnumFromJson(ctx: Context, fullName: string, enumDesc: E
 
   const functionName = uncapitalize(fullName) + "FromJSON";
   chunks.push(code`export function ${def(functionName)}(object: any): ${fullName} {`);
-  chunks.push(code`switch (object) {`);
-
-  for (const valueDesc of enumDesc.value) {
-    const memberName = getMemberName(ctx, fullName, valueDesc);
-    const valueName = getValueName(ctx, fullName, valueDesc);
-    chunks.push(code`
-      case ${valueDesc.number}:
-      case "${valueName}":
-        return ${fullName}.${memberName};
-    `);
-  }
-
-  if (options.unrecognizedEnum) {
-    chunks.push(code`
-      case ${UNRECOGNIZED_ENUM_VALUE}:
-      case "${UNRECOGNIZED_ENUM_NAME}":
-      default:
-        return ${fullName}.${UNRECOGNIZED_ENUM_NAME};
-    `);
+  if (options.useDirectEnums) {
+    chunks.push(code`return object as ${fullName};`);
   } else {
-    // We use globalThis to avoid conflicts on protobuf types named `Error`.
-    chunks.push(code`
-      default:
-        throw new ${utils.globalThis}.Error("Unrecognized enum value " + object + " for enum ${fullName}");
-    `);
-  }
-
-  chunks.push(code`}`);
+    chunks.push(code`switch (object) {`);
+    for (const valueDesc of enumDesc.value) {
+        const memberName = getMemberName(ctx, fullName, valueDesc);
+        const valueName = getValueName(ctx, fullName, valueDesc);
+        chunks.push(code`
+        case ${valueDesc.number}:
+        case "${valueName}":
+            return ${fullName}.${memberName};
+        `);
+    }
+    if (options.unrecognizedEnum) {
+        chunks.push(code`
+        case ${UNRECOGNIZED_ENUM_VALUE}:
+        case "${UNRECOGNIZED_ENUM_NAME}":
+        default:
+            return ${fullName}.${UNRECOGNIZED_ENUM_NAME};
+        `);
+    } else {
+        // We use globalThis to avoid conflicts on protobuf types named `Error`.
+        chunks.push(code`
+        default:
+            throw new ${utils.globalThis}.Error("Unrecognized enum value " + object + " for enum ${fullName}");
+        `);
+    }
+    chunks.push(code`}`);
+  }  
   chunks.push(code`}`);
   return joinCode(chunks, { on: "\n" });
 }
@@ -114,48 +115,51 @@ export function generateEnumToJson(ctx: Context, fullName: string, enumDesc: Enu
   const chunks: Code[] = [];
 
   const functionName = uncapitalize(fullName) + "ToJSON";
+  const returnType = options.useDirectEnums || options.useNumericEnumForJson ? "number" : "string";
   chunks.push(
-    code`export function ${def(functionName)}(object: ${fullName}): ${
-      ctx.options.useNumericEnumForJson ? "number" : "string"
-    } {`,
+    code`export function ${def(functionName)}(object: ${fullName}): ${returnType} {`,
   );
-  chunks.push(code`switch (object) {`);
-
-  for (const valueDesc of enumDesc.value) {
-    if (ctx.options.useNumericEnumForJson) {
-      const memberName = getMemberName(ctx, fullName, valueDesc);
-      chunks.push(code`case ${fullName}.${memberName}: return ${valueDesc.number};`);
-    } else {
-      const memberName = getMemberName(ctx, fullName, valueDesc);
-      const valueName = getValueName(ctx, fullName, valueDesc);
-      chunks.push(code`case ${fullName}.${memberName}: return "${valueName}";`);
-    }
-  }
-
-  if (options.unrecognizedEnum) {
-    chunks.push(code`
-      case ${fullName}.${UNRECOGNIZED_ENUM_NAME}:`);
-
-    if (ctx.options.useNumericEnumForJson) {
-      chunks.push(code`
-      default:
-        return ${UNRECOGNIZED_ENUM_VALUE};
-    `);
-    } else {
-      chunks.push(code`
-      default:
-        return "${UNRECOGNIZED_ENUM_NAME}";
-    `);
-    }
+  if (options.useDirectEnums) {
+    chunks.push(code`return object as number;`);
   } else {
-    // We use globalThis to avoid conflicts on protobuf types named `Error`.
-    chunks.push(code`
-      default:
-        throw new ${utils.globalThis}.Error("Unrecognized enum value " + object + " for enum ${fullName}");
-    `);
-  }
+    chunks.push(code`switch (object) {`);
 
-  chunks.push(code`}`);
+    for (const valueDesc of enumDesc.value) {
+        if (ctx.options.useNumericEnumForJson) {
+        const memberName = getMemberName(ctx, fullName, valueDesc);
+        chunks.push(code`case ${fullName}.${memberName}: return ${valueDesc.number};`);
+        } else {
+        const memberName = getMemberName(ctx, fullName, valueDesc);
+        const valueName = getValueName(ctx, fullName, valueDesc);
+        chunks.push(code`case ${fullName}.${memberName}: return "${valueName}";`);
+        }
+    }
+
+    if (options.unrecognizedEnum) {
+        chunks.push(code`
+        case ${fullName}.${UNRECOGNIZED_ENUM_NAME}:`);
+
+        if (ctx.options.useNumericEnumForJson) {
+        chunks.push(code`
+        default:
+            return ${UNRECOGNIZED_ENUM_VALUE};
+        `);
+        } else {
+        chunks.push(code`
+        default:
+            return "${UNRECOGNIZED_ENUM_NAME}";
+        `);
+        }
+    } else {
+        // We use globalThis to avoid conflicts on protobuf types named `Error`.
+        chunks.push(code`
+        default:
+            throw new ${utils.globalThis}.Error("Unrecognized enum value " + object + " for enum ${fullName}");
+        `);
+    }
+
+    chunks.push(code`}`);
+    }
   chunks.push(code`}`);
   return joinCode(chunks, { on: "\n" });
 }
